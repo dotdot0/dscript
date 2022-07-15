@@ -77,10 +77,26 @@ function generateForStatementAndExpr(node){
             })
             const funParamsList = funParams.join(",")
             console.log(funParamsList);
-            const funBody = generateForStatements(node.body)
-            // console.log(funBody);
-            return `function ${node.fun_name.value}(${funParamsList}) {
-             ${funBody}
+            if(node.body.type === "return"){
+                const reFunBody = generateForStatements(node.body.tbr)
+                return `function ${node.fun_name.value}(${funParamsList}) {
+                            return ${reFunBody}
+                   }`
+            }else{
+                const funBody = generateForStatements(node.body)
+                // console.log(funBody);
+                return `function ${node.fun_name.value}(${funParamsList}) {
+                 ${funBody}
+                }`
+            }
+            
+        }
+
+        //If Statement
+        else if(node.type === "if_statement"){
+            const ifBody = generateForStatements(node.body);
+            return `if (${node.condition.left_value.value} ${node.condition.opr.value} ${node.condition.right_value.value}){
+                ${ifBody}
             }`
         }
 

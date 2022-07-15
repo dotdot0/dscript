@@ -20,6 +20,8 @@ var grammar = {
     {"name": "statement", "symbols": ["var_assign"], "postprocess": id},
     {"name": "statement", "symbols": ["fun_call"], "postprocess": id},
     {"name": "statement", "symbols": ["fun_dec"], "postprocess": id},
+    {"name": "statement", "symbols": ["return_sta"], "postprocess": id},
+    {"name": "statement", "symbols": ["if"], "postprocess": id},
     {"name": "var_assign", "symbols": [{"literal":"mut"}, "_", (myLexer.has("identifier") ? {type: "identifier"} : identifier), "_", (myLexer.has("assign") ? {type: "assign"} : assign), "_", "expr"], "postprocess":  
         (data) => {
             return{ 
@@ -40,6 +42,32 @@ var grammar = {
            }
         }
          },
+    {"name": "if", "symbols": [{"literal":"if"}, "__", "condition", "__", {"literal":"{"}, (myLexer.has("NL") ? {type: "NL"} : NL), "statements", (myLexer.has("NL") ? {type: "NL"} : NL), {"literal":"}"}], "postprocess":  
+        (data) => {
+                return{
+                        type: "if_statement",
+                        condition: data[2],
+                        body: data[6]
+                }
+        }
+         },
+    {"name": "condition", "symbols": ["expr", "__", "comp_opr", "__", "expr"], "postprocess": 
+        (data) => {
+                return{
+                        left_value: data[0],
+                        opr: data[2],
+                        right_value: data[4]
+                }
+        }
+        },
+    {"name": "comp_opr", "symbols": [{"literal":">"}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":"<"}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":"and"}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":"or"}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":"=="}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":"==="}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":">="}], "postprocess": id},
+    {"name": "comp_opr", "symbols": [{"literal":"<="}], "postprocess": id},
     {"name": "fun_dec", "symbols": [{"literal":"fn"}, "__", (myLexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"("}, "_", "param_list", "_", {"literal":")"}, {"literal":"{"}, (myLexer.has("NL") ? {type: "NL"} : NL), "fun_body", (myLexer.has("NL") ? {type: "NL"} : NL), {"literal":"}"}], "postprocess":  
         (data) => {
                 return{
@@ -60,6 +88,24 @@ var grammar = {
                 return data[3]
         }
                 },
+    {"name": "fun_body", "symbols": ["_", {"literal":"return"}, "__", "return_sta"], "postprocess":  
+        (data) => {
+                
+                return {
+                        type: "return",
+                        tbr: data[3]}
+        }
+                 },
+    {"name": "return_sta", "symbols": ["expr"], "postprocess":  
+        (data) => {
+                return [data[0]]
+        }
+         },
+    {"name": "return_sta", "symbols": ["expr", "__", "return_sta"], "postprocess":  
+        (data) => {
+                return [data[0], ...data[2]]
+        }
+         },
     {"name": "param_list", "symbols": [(myLexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": 
         (data) => {
                 return [data[0]]

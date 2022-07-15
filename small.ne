@@ -20,6 +20,8 @@ statement
     -> var_assign{% id %}
     |  fun_call {% id %}
     |  fun_dec {% id %}
+    |  return_sta {% id %}
+    |  if {% id %}
     
 var_assign
     ->"mut" _ %identifier _ %assign _ expr {% 
@@ -42,6 +44,48 @@ var_assign
         }
      }
       %}
+
+if -> "if" __ condition __ "{" %NL statements %NL "}"
+{% 
+(data) => {
+        return{
+                type: "if_statement",
+                condition: data[2],
+                body: data[6]
+        }
+}
+ %}
+
+condition -> expr __ comp_opr __ expr{%
+        (data) => {
+                return{
+                        left_value: data[0],
+                        opr: data[2],
+                        right_value: data[4]
+                }
+        }
+%}
+| condition __ and_or __ condition{%
+        (data) => {
+                return{
+                        left_value: data[0],
+                        and_or_opr: data[2],
+                        right_value: data[4]
+                }
+        }
+%}
+
+comp_opr
+        -> ">" {% id %}
+        |  "<" {% id %}
+        |  "==" {% id %}
+        |  "===" {% id %}
+        |  ">=" {% id %}
+        |  "<=" {% id %}
+
+and_or
+      ->"or" {% id %}
+       | "and" {% id %}
 
 fun_dec
         -> "fn" __ %identifier _ "(" _ param_list _ ")" "{" %NL fun_body %NL "}"
@@ -68,6 +112,28 @@ fun_body
                         return data[3]
                 }
         %}
+        | _ "return" __ return_sta 
+        {% 
+                (data) => {
+                        
+                        return {
+                                type: "return",
+                                tbr: data[3]}
+                }
+         %}
+
+return_sta 
+        -> expr {% 
+        (data) => {
+                return [data[0]]
+        }
+         %} 
+        | expr __ return_sta 
+        {% 
+        (data) => {
+                return [data[0], ...data[2]]
+        }
+         %}
 
 
 param_list
