@@ -23,7 +23,7 @@ let lexer = moo.compile({
     lbrack:  '[',
     rbrack:  ']',
     identifier: /[a-zA-Z][a-zA-Z_0-9]*/,
-    assign: '=',
+    dequal: '===',
     NL:  newLine,
     true: {match: 'true', value: n => true},
     false: {match: 'false', value: n => false},
@@ -38,7 +38,7 @@ let lexer = moo.compile({
     and: 'and',
     or: 'or',
     equal: '==',
-    dequal: '===',
+    assign: '=',
     ge: '>=',
     le: '<=',
     return: 'return'

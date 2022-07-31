@@ -22,6 +22,7 @@ statement
     |  fun_dec {% id %}
     |  return_sta {% id %}
     |  if {% id %}
+    |  if_else {% id %}
     
 var_assign
     ->"mut" _ %identifier _ %assign _ expr {% 
@@ -45,6 +46,24 @@ var_assign
      }
       %}
 
+if_else
+        -> if %NL "else" __ "{" %NL statements %NL "}" 
+        {%
+                (data) => {
+                        return{
+                                type: "if_else_statement",
+                                body: {
+                                        ifstatement: data[0],
+                                        elsestatement: {
+                                                type: "else_statement",
+                                                body: data[6]
+                                        }
+                                }
+                                
+                        }
+                } 
+         %}
+
 if -> "if" __ condition __ "{" %NL statements %NL "}"
 {% 
 (data) => {
@@ -55,6 +74,8 @@ if -> "if" __ condition __ "{" %NL statements %NL "}"
         }
 }
  %}
+
+
 
 condition -> expr __ comp_opr __ expr{%
         (data) => {

@@ -1,6 +1,10 @@
 const fs = require('fs/promises');
 const os = require('os')
 let newLine = ''
+const andor = {
+    and: '&&',
+    or: '||'
+}
 
 //New Line For Different OS
 if(os.platform() === 'win32'){
@@ -95,9 +99,40 @@ function generateForStatementAndExpr(node){
         //If Statement
         else if(node.type === "if_statement"){
             const ifBody = generateForStatements(node.body);
-            return `if (${node.condition.left_value.value} ${node.condition.opr.value} ${node.condition.right_value.value}){
+            if(node.condition.and_or_opr){
+              const leftCondn = `${node.condition.left_value.left_value.value} ${node.condition.left_value.opr.value} ${node.condition.left_value.right_value.value}`
+              let and_or = ''
+              const rightCondn = `${node.condition.right_value.left_value.value} ${node.condition.right_value.opr.value} ${node.condition.right_value.right_value.value}`
+              if (node.condition.and_or_opr.value === "and"){
+                and_or = andor.and
+              }
+              else{
+                and_or = andor.or
+              }
+              return `if (${leftCondn} ${and_or} ${rightCondn}){
                 ${ifBody}
-            }`
+              }`
+            }
+            else{
+                return `if (${node.condition.left_value.value} ${node.condition.opr.value} ${node.condition.right_value.value}){
+                    ${ifBody}
+                }`
+            }
+            
+        }
+
+        else if(node.type == "if_else_statement"){
+            const if_body = generateForStatementAndExpr(node.body.ifstatement);
+            const else_body = generateForStatementAndExpr(node.body.elsestatement);
+            return `${if_body}
+            ${else_body}`
+        }
+
+        else if(node.type === "else_statement"){
+            const body = generateForStatements(node.body);
+            return `else{
+                ${body}
+            }`;
         }
 
         //String
